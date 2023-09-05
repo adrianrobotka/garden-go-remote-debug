@@ -1,0 +1,29 @@
+FROM golang:1.20.0 AS builder
+
+WORKDIR /app
+
+# be aware of .dockerignore
+COPY . .
+
+RUN make build-prod
+
+##############################################
+
+FROM alpine:3.14 as prod
+
+WORKDIR /app
+
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    app
+USER app
+
+COPY --from=builder /app/build/out/prod app
+
+CMD ["/app/app"]

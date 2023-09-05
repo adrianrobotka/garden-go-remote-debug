@@ -1,0 +1,26 @@
+apiVersion: garden.io/v1
+kind: Project
+name: gowild
+defaultEnvironment: local-kind-dev
+
+variables:
+  domain: wild.local.app.garden
+  namespace: wild-${kebabCase(local.username)}
+
+environments:
+  - name: local-kind-dev
+    variables:
+      dockerfile: Dockerfile.dev
+
+  - name: local-kind-prod
+    variables:
+      dockerfile: Dockerfile.prod
+
+providers:
+  - name: local-kubernetes
+    environments:
+      - local-kind-dev
+      - local-kind-prod
+    namespace: ${var.namespace}
+    defaultHostname: ${var.domain}
+    # setupIngressController: false

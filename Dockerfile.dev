@@ -1,0 +1,14 @@
+FROM golang:1.20.0
+
+WORKDIR /app
+
+# required for go get, also good for caching
+COPY go.mod go.sum ./
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+
+# be aware of .dockerignore
+COPY . .
+
+RUN make build-dev
+
+CMD [ "/app/build/out/dev" ]

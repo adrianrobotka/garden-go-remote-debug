@@ -1,0 +1,39 @@
+kind: Build
+type: container
+description: Build the Golang API
+name: api
+spec:
+  dockerfile: ${var.dockerfile}
+
+---
+kind: Deploy
+type: container
+name: api
+build: api
+spec:
+  command:
+    - /app/build/remote-debug.sh
+  sync:
+    paths:
+      - source: .
+        target: /app
+        mode: one-way-replica
+  ports:
+    - name: http
+      containerPort: 8080
+    - name: debug  # for golang delve
+      containerPort: 32100
+      nodePort: 32100
+  ingresses:
+    - path: /
+      hostname: api.${var.domain}
+      port: http
+
+---
+kind: Test
+type: container
+name: unit
+description: Unit test for backend API
+build: api
+spec:
+  args: ["go", "test"]
